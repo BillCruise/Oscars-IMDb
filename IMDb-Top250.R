@@ -32,7 +32,16 @@ ratings <- html %>%
     html_text() %>%
     as.numeric()
 
-imdb.top.250 <- data.frame(Rank=ranks, Title=titles, Year=years, Rating=ratings)
+# The number of votes that the rating is based on is in the title attributed
+votes <- html %>%
+    html_nodes("td.imdbRating strong") %>%
+    html_attr("title") %>%
+    str_replace(".* based on ", "") %>%
+    str_replace(" user ratings", "") %>%
+    str_replace_all(",", "") %>%
+    as.numeric()
+
+imdb.top.250 <- data.frame(Rank=ranks, Title=titles, Year=years, Rating=ratings, Votes=votes)
 
 
 # Average age of films in the top 250
@@ -49,7 +58,10 @@ imdb.top.250 %>%
     arrange(desc(total)) %>%
     head(10)
 
-# Show films for a particular year
+# Show top films for a particular year
 imdb.top.250 %>% 
     filter(Year==2015)
+
+# Find the average number of votes for films from each year.
+aggregate(imdb.top.250[, 5], list(Year=imdb.top.250$Year), mean)
 
