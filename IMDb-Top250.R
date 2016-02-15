@@ -2,6 +2,7 @@
 
 library(rvest)
 library(stringr)
+library(dplyr)
 
 html <- read_html("http://www.imdb.com/chart/top")
 
@@ -32,3 +33,23 @@ ratings <- html %>%
     as.numeric()
 
 imdb.top.250 <- data.frame(Rank=ranks, Title=titles, Year=years, Rating=ratings)
+
+
+# Average age of films in the top 250
+as.integer(format(Sys.Date(), "%Y")) - as.integer(mean(imdb.top.250$Year))
+
+# Make a bar plot showing which years have the most films in the top 250.
+counts <- table(imdb.top.250$Year)
+barplot(counts, main="Year Distribution", xlab="Year", ylab="Number of Films")
+
+# use dplyr summary functions to display a top ten list of years
+imdb.top.250 %>% 
+    group_by(Year) %>%
+    summarise(total=n()) %>%
+    arrange(desc(total)) %>%
+    head(10)
+
+# Show films for a particular year
+imdb.top.250 %>% 
+    filter(Year==2015)
+
