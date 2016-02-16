@@ -4,7 +4,7 @@ library(rvest)
 library(stringr)
 library(dplyr)
 
-html <- read_html("http://www.imdb.com/chart/top")
+html <- read_html("http://www.imdb.com/chart/top", encoding="UTF-8")
 
 # IMDb ranks are in a <td> element with the class "titleColumn"
 ranks <- html %>%
@@ -44,8 +44,11 @@ votes <- html %>%
 imdb.top.250 <- data.frame(Rank=ranks, Title=titles, Year=years, Rating=ratings, Votes=votes)
 
 
-# Average age of films in the top 250
+# Mean age of films in the top 250
 as.integer(format(Sys.Date(), "%Y")) - as.integer(mean(imdb.top.250$Year))
+
+# Median age of films in the top 250
+as.integer(format(Sys.Date(), "%Y")) - as.integer(median(imdb.top.250$Year))
 
 # Make a bar plot showing which years have the most films in the top 250.
 counts <- table(imdb.top.250$Year)
@@ -60,8 +63,15 @@ imdb.top.250 %>%
 
 # Show top films for a particular year
 imdb.top.250 %>% 
-    filter(Year==2015)
+    filter(Year==1994)
 
 # Find the average number of votes for films from each year.
-aggregate(imdb.top.250[, 5], list(Year=imdb.top.250$Year), mean)
+mean.votes <- aggregate(imdb.top.250[, 5], list(Year=imdb.top.250$Year), mean)
+barplot(mean.votes$x, names.arg=mean.votes$Year)
+
+# Plot the rating vs. number of votes
+plot(x=imdb.top.250$Votes, y=imdb.top.250$Rating,
+     main="IMDb Rating vs. Number of Votes",
+     xlab="Number of Votes", ylab="Average Rating")
+abline(lm(imdb.top.250$Rating~imdb.top.250$Votes), col="red")
 
